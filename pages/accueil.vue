@@ -1,3 +1,4 @@
+<!-- pages/accueil.vue -->
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
     <!-- Navigation Header -->
@@ -5,11 +6,8 @@
       <UContainer class="flex items-center justify-between py-4">
         <!-- Logo -->
         <div class="flex items-center space-x-2">
-          <NuxtLink to="#hero" class="flex items-center space-x-2">
-            <!-- <UIcon name="i-lucide-shield" class="text-2xl text-emerald-400" /> -->
-            <UIcon name="i-lucide-sword" class="text-2xl text-emerald-400" />
-            <h1 class="text-xl font-bold text-white">ShinobiRik</h1>
-          </NuxtLink>
+          <UIcon name="i-lucide-sword" class="text-2xl text-emerald-400" />
+          <h1 class="text-xl font-bold text-white">ShinobiRik</h1>
         </div>
 
         <!-- Navigation Menu -->
@@ -25,8 +23,9 @@
           </NuxtLink>
         </div>
 
-        <!-- Bouton de Connexion @click="isLoginModalOpen = true" -->
+        <!-- Bouton de Connexion -->
         <UButton 
+          @click="isLoginModalOpen = true"
           color="emerald" 
           variant="solid"
           class="bg-emerald-600 hover:bg-emerald-700 transition-all transform hover:scale-105"
@@ -37,7 +36,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="pt-24 pb-16 px-4" id="hero">
+    <section class="pt-24 pb-16 px-4">
       <UContainer class="text-center max-w-4xl mx-auto">
         <div class="animate-fade-in-up">
           <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
@@ -53,8 +52,8 @@
           </p>
 
           <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <!-- @click="isLoginModalOpen = true" -->
             <UButton 
+              @click="isLoginModalOpen = true"
               size="xl" 
               color="emerald"
               class="bg-emerald-600 hover:bg-emerald-700 transform hover:scale-105 transition-all px-8 py-4"
@@ -197,7 +196,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="py-20 px-4" id="login">
+    <section class="py-20 px-4">
       <UContainer class="text-center max-w-2xl mx-auto">
         <h2 class="text-4xl font-bold text-white mb-6">
           Prêt à rejoindre l'arène ?
@@ -205,268 +204,188 @@
         <p class="text-xl text-gray-300 mb-8">
           Créez votre compte et commencez à monétiser vos talents de ninja dès aujourd'hui.
         </p>
-        <UModal
-          :title="isLoginMode ? 'Connexion' : 'Inscription'"
-          class="bg-gradient-to-br from-gray-800 to-gray-900"
-          >
-          <!-- @click="isLoginModalOpen = true"   {{ isLoginMode ? 'Connexion' : 'Inscription' }}   :ui="{ width: 'sm:max-w-3xl' }"-->
-          <UButton 
-            size="xl" 
-            color="emerald"
-            class="bg-emerald-600 hover:bg-emerald-700 transform hover:scale-105 transition-all px-8 py-4"
-          >
-            Rejoindre maintenant
-          </UButton>
-          <!-- Modal de Connexion/Inscription -->
-          <template #body>
-            <!--  bg-gradient-to-br from-gray-800 to-gray-900 -->
-            <div class="p-6 rounded-lg">
-              <!-- Header -->
-              <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-white text-center">
-                  Rejoins-nous vite !
-                  <!-- {{ isLoginMode ? 'Connexion' : 'Inscription' }} -->
-                </h2>
-                <!-- <UButton 
-                  @click="isLoginModalOpen = false"
-                  color="gray" 
-                  variant="ghost" 
-                  icon="i-lucide-x"
-                /> -->
-              </div>
-
-              <!-- Tabs -->
-              <div class="flex mb-6 bg-slate-700/50 rounded-lg p-1">
-                <button 
-                  @click="isLoginMode = true"
-                  :class="[
-                    'flex-1 py-2 px-4 rounded-md transition-all',
-                    isLoginMode ? 'bg-emerald-600 text-white' : 'text-gray-300 hover:text-white'
-                  ]"
-                >
-                  Connexion
-                </button>
-                <button 
-                  @click="isLoginMode = false"
-                  :class="[
-                    'flex-1 py-2 px-4 rounded-md transition-all',
-                    !isLoginMode ? 'bg-emerald-600 text-white' : 'text-gray-300 hover:text-white'
-                  ]"
-                >
-                  Inscription
-                </button>
-              </div>
-
-              <!-- Formulaire de Connexion -->
-              <div v-if="isLoginMode" class="space-y-4 animate-fade-in-up">
-                <div>
-                  <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                  <UInput 
-                    v-model="loginForm.email" 
-                    type="email"
-                    placeholder="votre@email.com"
-                    class="w-full"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-300 mb-2">Mot de passe</label>
-                  <UInput 
-                    v-model="loginForm.password" 
-                    type="password"
-                    placeholder="••••••••"
-                    class="w-full"
-                  />
-                </div>
-                <UButton 
-                  @click="handleLogin"
-                  color="neutral" 
-                  class="mt-6"
-                  :loading="isLoading"
-                >
-                  Se connecter
-                </UButton>
-              </div>
-
-              <!-- Formulaire d'Inscription -->
-              <div v-else class="space-y-4 animate-fade-in-up">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Nom</label>
-                    <UInput 
-                      v-model="registerForm.nom" 
-                      placeholder="Nom"
-                      class="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Prénom</label>
-                    <UInput 
-                      v-model="registerForm.prenom" 
-                      placeholder="Prénom"
-                      class="w-full"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-300 mb-2">Pseudo</label>
-                  <UInput 
-                    v-model="registerForm.pseudo" 
-                    placeholder="VotreNinja"
-                    class="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                  <UInput 
-                    v-model="registerForm.email" 
-                    type="email"
-                    placeholder="votre@email.com"
-                    class="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-300 mb-2">Mot de passe</label>
-                  <UInput 
-                    v-model="registerForm.password" 
-                    type="password"
-                    placeholder="••••••••"
-                    class="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-300 mb-2">Confirmer le mot de passe</label>
-                  <UInput 
-                    v-model="registerForm.confirmPassword" 
-                    type="password"
-                    placeholder="••••••••"
-                    class="w-full"
-                  />
-                </div>
-                
-                <UButton 
-                  @click="handleRegister"
-                  color="neutral" 
-                  class="mt-6"
-                  :loading="isLoading"
-                >
-                  S'inscrire
-                </UButton>
-              </div>
-
-              <!-- Divider -->
-              <div class="my-6 flex items-center">
-                <div class="flex-1 border-t border-slate-600"></div>
-                <span class="px-4 text-sm text-gray-400">ou</span>
-                <div class="flex-1 border-t border-slate-600"></div>
-              </div>
-
-              <!-- Social Login -->
-              <div class="space-y-3">
-                <UButton color="error" variant="outline" class="w-full justify-center">
-                  <UIcon name="i-lucide-chrome" class="mr-2" />
-                  Continuer avec Google
-                </UButton>
-                <UButton color="secondary" variant="outline" class="w-full justify-center">
-                  <UIcon name="i-lucide-facebook" class="mr-2" />
-                  Continuer avec Facebook
-                </UButton>
-              </div>
-            </div>
-          </template>
-          <!-- <template #footer>
-            <div class="text-sm text-gray-400 mt-4">
-              En vous inscrivant, vous acceptez nos 
-              <NuxtLink to="/terms" class="text-white hover:underline">Conditions d'utilisation</NuxtLink> 
-              et notre 
-              <NuxtLink to="/privacy" class="text-white hover:underline">Politique de confidentialité</NuxtLink>.
-            </div>
-          </template> -->
-        </UModal>
+        <UButton 
+          @click="isLoginModalOpen = true"
+          size="xl" 
+          color="emerald"
+          class="bg-emerald-600 hover:bg-emerald-700 transform hover:scale-105 transition-all px-8 py-4"
+        >
+          Rejoindre maintenant
+        </UButton>
       </UContainer>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-black/20 py-8">
-      <UContainer class="text-center text-gray-400">
-        <p>&copy; 2025 ShinobiRik. Tous droits réservés.</p>
-        <div class="mt-4 space-x-4">
-          <NuxtLink to="/terms" class="hover:underline">Conditions d'utilisation</NuxtLink>
-          <NuxtLink to="/privacy" class="hover:underline">Politique de confidentialité</NuxtLink>
-          <NuxtLink to="/contact" class="hover:underline">Contact</NuxtLink>
+    <!-- Modal de Connexion/Inscription -->
+    <UModal v-model="isLoginModalOpen" class="modal-custom">
+      <div class="p-6 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-white">
+            {{ isLoginMode ? 'Connexion' : 'Inscription' }}
+          </h2>
+          <UButton 
+            @click="isLoginModalOpen = false"
+            color="gray" 
+            variant="ghost" 
+            icon="i-lucide-x"
+          />
         </div>
-      </UContainer>
-    </footer>
+
+        <!-- Tabs -->
+        <div class="flex mb-6 bg-slate-700/50 rounded-lg p-1">
+          <button 
+            @click="isLoginMode = true"
+            :class="[
+              'flex-1 py-2 px-4 rounded-md transition-all',
+              isLoginMode ? 'bg-emerald-600 text-white' : 'text-gray-300 hover:text-white'
+            ]"
+          >
+            Connexion
+          </button>
+          <button 
+            @click="isLoginMode = false"
+            :class="[
+              'flex-1 py-2 px-4 rounded-md transition-all',
+              !isLoginMode ? 'bg-emerald-600 text-white' : 'text-gray-300 hover:text-white'
+            ]"
+          >
+            Inscription
+          </button>
+        </div>
+
+        <!-- Formulaire de Connexion -->
+        <div v-if="isLoginMode" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <UInput 
+              v-model="loginForm.email" 
+              type="email"
+              placeholder="votre@email.com"
+              class="w-full"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Mot de passe</label>
+            <UInput 
+              v-model="loginForm.password" 
+              type="password"
+              placeholder="••••••••"
+              class="w-full"
+            />
+          </div>
+          <UButton 
+            @click="handleLogin"
+            color="emerald" 
+            class="w-full mt-6"
+            :loading="isLoading"
+          >
+            Se connecter
+          </UButton>
+        </div>
+
+        <!-- Formulaire d'Inscription -->
+        <div v-else class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Nom</label>
+              <UInput 
+                v-model="registerForm.nom" 
+                placeholder="Nom"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Prénom</label>
+              <UInput 
+                v-model="registerForm.prenom" 
+                placeholder="Prénom"
+                class="w-full"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Pseudo</label>
+            <UInput 
+              v-model="registerForm.pseudo" 
+              placeholder="VotreNinja"
+              class="w-full"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <UInput 
+              v-model="registerForm.email" 
+              type="email"
+              placeholder="votre@email.com"
+              class="w-full"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Mot de passe</label>
+            <UInput 
+              v-model="registerForm.password" 
+              type="password"
+              placeholder="••••••••"
+              class="w-full"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Confirmer le mot de passe</label>
+            <UInput 
+              v-model="registerForm.confirmPassword" 
+              type="password"
+              placeholder="••••••••"
+              class="w-full"
+            />
+          </div>
+          
+          <UButton 
+            @click="handleRegister"
+            color="emerald" 
+            class="w-full mt-6"
+            :loading="isLoading"
+          >
+            S'inscrire
+          </UButton>
+        </div>
+
+        <!-- Divider -->
+        <div class="my-6 flex items-center">
+          <div class="flex-1 border-t border-slate-600"></div>
+          <span class="px-4 text-sm text-gray-400">ou</span>
+          <div class="flex-1 border-t border-slate-600"></div>
+        </div>
+
+        <!-- Social Login -->
+        <div class="space-y-3">
+          <UButton color="white" variant="outline" class="w-full">
+            <UIcon name="i-lucide-chrome" class="mr-2" />
+            Continuer avec Google
+          </UButton>
+          <UButton color="blue" class="w-full">
+            <UIcon name="i-lucide-facebook" class="mr-2" />
+            Continuer avec Facebook
+          </UButton>
+        </div>
+      </div>
+    </UModal>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 // Page meta
 definePageMeta({
   layout: 'default'
 })
-// import * as z from 'zod'
-// import type { FormSubmitEvent, TabsItem } from '@nuxt/ui'
-
-// const items = [
-//   {
-//     label: 'Connexion',
-//     description: 'Déjà un compte ? Connectez-vous et profitez de l\'expérience.',
-//     icon: 'i-lucide-user',
-//     slot: 'account' as const
-//   },
-//   {
-//     label: 'Inscription',
-//     description: 'Renseignez vos informations et rejoignez-nous pour profitez de l\'expérience.',
-//     icon: 'i-lucide-lock',
-//     slot: 'password' as const
-//   }
-// ] satisfies TabsItem[]
-
-// // Schéma de validation des champs de saisie
-// const schema = z.object({
-//   email: z.string().email('Email invalide'),
-//   password: z.string().min(8, 'Au moins 8 caractères'),
-//   nom: z.string().min(2, 'Au moins 8 caractères'),
-//   prenom: z.string().min(3, 'Au moins 8 caractères'),
-//   pseudo: z.string().min(3, 'Au moins 8 caractères'),
-//   wallet: z.string().min(8, 'Au moins 8 caractères'),
-//   newPassword: z.string().min(8, 'Au moins 8 caractères'),
-//   confirmPassword: z.string().min(8, 'Au moins 8 caractères')
-// })
-
-// type Schema = z.output<typeof schema>
-
-// const state = reactive<Partial<z.Schema>>({
-//   email: undefined,
-//   password: undefined,
-//   nom: '',
-//   prenom: '',
-//   pseudo: '',
-//   wallet: '',
-//   newPassword: '',
-//   confirmPassword: ''
-// })
-
-// const toast = useToast()
-// async function onSubmit(event: FormSubmitEvent<Schema>) {
-//   // toast.add({ title: 'Success', description: 'Le formulaire a été soumis!', color: 'success' })
-//   // console.log(event.data)
-//   navigateTo('/liste-mises')
-// }
 
 // Reactive data
 const isLoginModalOpen = ref(false)
 const isLoginMode = ref(true)
 const isLoading = ref(false)
-
-// const loginForm = reactive({
-//   email: '',
-//   password: ''
-// })
 
 const loginForm = reactive({
   email: '',
@@ -490,8 +409,7 @@ async function handleLogin() {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     // Redirection vers le dashboard
-    await navigateTo('/dashboard')
-    // Fermer le modal de connexion
+    await navigateTo('/liste-mises')
     isLoginModalOpen.value = false
   } catch (error) {
     console.error('Erreur de connexion:', error)
