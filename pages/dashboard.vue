@@ -257,10 +257,10 @@
     </div>
 
     <!-- Composant de création de combat -->
-    <!-- <CreateCombat 
+    <CreateCombat 
       v-model="showCreateModal" 
       @combat-created="handleCombatCreated"
-    /> -->
+    />
   </div>
 </template>
 
