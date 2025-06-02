@@ -1,0 +1,208 @@
+-- Schéma de base de données PostgreSQL pour l'application Shinobirik
+
+-- Extension pour les UUID
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Table des utilisateurs
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    avatar_url VARCHAR(500),
+    tiplink_wallet_address VARCHAR(255),
+    
+    -- Moyens de paiement
+    paypal_email VARCHAR(255),
+    wero_phone VARCHAR(20),
+    western_union_details JSONB,
+    wave_phone VARCHAR(20),
+    orange_money_phone VARCHAR(20),
+    mtn_mobile_money_phone VARCHAR(20),
+    
+    -- Préférences de réception
+    preferred_payment_method VARCHAR(50) DEFAULT 'paypal', -- paypal, wero, western_union, wave, orange_money, mtn_mobile_money
+    preferred_currency VARCHAR(10) DEFAULT 'USD', -- EUR, CFA, USD, CNY, NGN
+    
+    -- Statistiques
+    total_combats INTEGER DEFAULT 0,
+    combats_wins INTEGER DEFAULT 0,
+    combats_losses INTEGER DEFAULT 0,
+    total_earnings DECIMAL(15, 6) DEFAULT 0,
+    total_spent DECIMAL(15, 6) DEFAULT 0,
+    
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP WITH TIME ZONE,
+    email_verified BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Table des personnages (ninjas)
+CREATE TABLE characters (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    clan VARCHAR(50),
+    rank VARCHAR(30),
+    abilities JSONB,
+    avatar_url VARCHAR(500),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table des combats
+CREATE TABLE combats (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    combat_code VARCHAR(20) UNIQUE NOT NULL, -- SHIBIRIK0001
+    type VARCHAR(20) NOT NULL, -- singulier, duo, 1vs2
+    status VARCHAR(20) DEFAULT 'pending', -- pending, accepted, in_progress, completed, cancelled
+    
+    -- Mise
+    bet_amount DECIMAL(15, 6) NOT NULL,
+    total_pot DECIMAL(15, 6) NOT NULL,
+    service_fees DECIMAL(15, 6) NOT NULL,
+    arbitrage_fees DECIMAL(15, 6) NOT NULL,
+    winner_reward DECIMAL(15, 6),
+    
+    -- Participants
+    team1_player1_id UUID NOT NULL REFERENCES users(id),
+    team1_player1_character_id UUID NOT NULL REFERENCES characters(id),
+    team1_player2_id UUID REFERENCES users(id),
+    team1_player2_character_id UUID REFERENCES characters(id),
+    
+    team2_player1_id UUID NOT NULL REFERENCES users(id),
+    team2_player1_character_id UUID NOT NULL REFERENCES characters(id),
+    team2_player2_id UUID REFERENCES users(id),
+    team2_player2_character_id UUID REFERENCES characters(id),
+    
+    -- Arbitre
+    arbitre_id UUID NOT NULL REFERENCES users(id),
+    arbitre_confirmed BOOLEAN DEFAULT FALSE,
+    arbitre_confirmation_date TIMESTAMP WITH TIME ZONE,
+    
+    -- Résultats
+    winner_team INTEGER, -- 1 ou 2, NULL si match nul
+    result_reason VARCHAR(255),
+    completed_at TIMESTAMP WITH TIME ZONE,
+    
+    -- Détails
+    arena_link VARCHAR(500),
+    description TEXT,
+    group_name VARCHAR(100) DEFAULT 'Shinobi New Generation',
+    
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Contraintes
+    CONSTRAINT valid_combat_type CHECK (type IN ('singulier', 'duo', '1vs2')),
+    CONSTRAINT valid_status CHECK (status IN ('pending', 'accepted', 'in_progress', 'completed', 'cancelled')),
+    CONSTRAINT valid_winner_team CHECK (winner_team IN (1, 2) OR winner_team IS NULL)
+);
+
+-- Table des transactions
+CREATE TABLE transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    type VARCHAR(20) NOT NULL, -- deposit, withdrawal, bet, win, fee, donation
+    status VARCHAR(20) DEFAULT 'pending', -- pending, completed, failed, cancelled
+    
+    -- Montants
+    amount DECIMAL(15, 6) NOT NULL,
+    currency VARCHAR(10) NOT NULL, -- USDC, SOL, etc.
+    fiat_amount DECIMAL(15, 2),
+    fiat_currency VARCHAR(10), -- EUR, CFA, USD, CNY, NGN
+    
+    -- Détails de la transaction
+    payment_method VARCHAR(50), -- tiplink, paypal, wero, etc.
+    external_transaction_id VARCHAR(255),
+    blockchain_hash VARCHAR(255),
+    
+    -- Références
+    combat_id UUID REFERENCES combats(id),
+    related_transaction_id UUID REFERENCES transactions(id),
+    
+    -- Frais
+    platform_fees DECIMAL(15, 6) DEFAULT 0,
+    network_fees DECIMAL(15, 6) DEFAULT 0,
+    
+    -- Métadonnées
+    metadata JSONB,
+    notes TEXT,
+    
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    
+    CONSTRAINT valid_transaction_type CHECK (type IN ('deposit', 'withdrawal', 'bet', 'win', 'fee', 'donation')),
+    CONSTRAINT valid_status CHECK (status IN ('pending', 'completed', 'failed', 'cancelled'))
+);
+
+-- Table des notifications
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    type VARCHAR(50) NOT NULL, -- combat_challenge, arbitrage_request, combat_result, transaction_status
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    
+    -- Données contextuelles
+    combat_id UUID REFERENCES combats(id),
+    transaction_id UUID REFERENCES transactions(id),
+    related_user_id UUID REFERENCES users(id),
+    
+    -- États
+    is_read BOOLEAN DEFAULT FALSE,
+    is_archived BOOLEAN DEFAULT FALSE,
+    
+    -- Actions possibles
+    action_type VARCHAR(50), -- accept_arbitrage, view_combat, view_transaction
+    action_data JSONB,
+    
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP WITH TIME ZONE,
+    
+    CONSTRAINT valid_notification_type CHECK (type IN ('combat_challenge', 'arbitrage_request', 'combat_result', 'transaction_status', 'system_message'))
+);
+
+-- Table des dépôts (pour suivi des justificatifs)
+CREATE TABLE deposits (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    transaction_id UUID NOT NULL REFERENCES transactions(id),
+    
+    -- Détails du dépôt
+    amount_crypto DECIMAL(15, 6) NOT NULL,
+    amount_fiat DECIMAL(15, 2) NOT NULL,
+    currency_fiat VARCHAR(10) NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    
+    -- Justificatifs
+    proof_document_url VARCHAR(500),
+    proof_document_type VARCHAR(50), -- image, pdf
+    
+    -- Validation
+    admin_validated BOOLEAN DEFAULT FALSE,
+    admin_user_id UUID REFERENCES users(id),
+    validation_notes TEXT,
+    validated_at TIMESTAMP WITH TIME ZONE,
+    
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table des retraits
+CREATE TABLE withdrawals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    transaction_id UUID NOT NULL REFERENCES transactions(id),
+    
+    -- Détails du retrait
+    amount_crypto DECIMAL(15, 6) NOT NULL,
+    amount_fiat DECIMAL(15, 2) NOT NULL,
+    currency_fiat

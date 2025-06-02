@@ -132,14 +132,101 @@
               </div>
 
               <div class="flex gap-2">
-                <UButton
-                  label="Consulter"
-                  color="primary"
-                  variant="outline"
-                  size="sm"
-                  class="flex-1"
-                  @click="openCombatModal(mise)"
-                />
+                <!-- Modal de consultation de combat -->
+                <UModal title="Détails du Combat" v-model="showCombatModal" :ui="{ width: 'sm:max-w-2xl' }">
+                    <UButton
+                        label="Consulter"
+                        color="primary"
+                        variant="outline"
+                        size="sm"
+                        class="flex-1"
+                        @click="openCombatModal(mise)"
+                    />
+
+                    <template #body>
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-bold">Statut</h3>
+                                <UBadge :color="getStatusColor(selectedCombat?.statut)" :label="selectedCombat?.statut" />
+                            </div>
+
+                            <div v-if="selectedCombat" class="space-y-6">
+                                <!-- Informations générales -->
+                                <div class="bg-gray-800 rounded-lg p-4">
+                                    <h4 class="font-semibold mb-3">Informations générales</h4>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <span class="text-slate-600">ID Combat:</span>
+                                            <span class="ml-2 font-mono">{{ selectedCombat.id }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-600">Type:</span>
+                                            <span class="ml-2">{{ selectedCombat.typeCombat }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-600">Groupe:</span>
+                                            <span class="ml-2">{{ selectedCombat.groupe }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-slate-600">Arbitre:</span>
+                                            <span class="ml-2">@{{ selectedCombat.arbitre }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Combattants -->
+                                <div class="bg-gray-900 rounded-lg p-4">
+                                    <h4 class="font-semibold mb-3">Combattants</h4>
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-center">
+                                            <UAvatar :alt="selectedCombat.roliste1" size="lg" class="mb-2" />
+                                            <div class="font-semibold">{{ selectedCombat.roliste1 }}</div>
+                                            <div class="text-sm text-slate-600">{{ selectedCombat.personnage1 || 'Personnage 1' }}</div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-red-500">VS</div>
+                                        <div class="text-center">
+                                            <UAvatar :alt="selectedCombat.roliste2" size="lg" class="mb-2" />
+                                            <div class="font-semibold">{{ selectedCombat.roliste2 }}</div>
+                                            <div class="text-sm text-slate-600">{{ selectedCombat.personnage2 || 'Personnage 2' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mise -->
+                                <div class="bg-cyan-300 rounded-lg p-4 text-center">
+                                    <h4 class="font-semibold mb-2">Mise en jeu</h4>
+                                    <div class="text-3xl font-bold text-emerald-600">{{ selectedCombat.valeur }} USD</div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex gap-3 pt-4">
+                                    <UButton
+                                        v-if="selectedCombat.statut === 'En attente'"
+                                        label="Participer au combat"
+                                        color="emerald"
+                                        class="flex-1"
+                                        @click="participerCombat(selectedCombat.id)"
+                                    />
+                                    <UButton
+                                        v-if="selectedCombat.statut === 'En cours' && isArbitre(selectedCombat)"
+                                        label="Déclarer le vainqueur"
+                                        color="primary"
+                                        class="flex-1"
+                                        @click="declarerVainqueur(selectedCombat.id)"
+                                    />
+                                    <UButton
+                                        label="Voir l'arène"
+                                        color="gray"
+                                        variant="outline"
+                                        @click="voirArene(selectedCombat.id)"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </UModal>
+                
+                <!-- Bouton de mise publique -->
                 <UButton
                   v-if="mise.statut === 'En attente'"
                   label="Participer"
@@ -160,107 +247,29 @@
         <h3 class="text-xl font-semibold text-slate-400 mb-2">Aucun combat trouvé</h3>
         <p class="text-slate-500">Créez un nouveau défi pour commencer à combattre !</p>
       </div>
-    </UContainer>
-
-    <!-- Modal de consultation de combat -->
-    <UModal v-model="showCombatModal" :ui="{ width: 'sm:max-w-2xl' }">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-2xl font-bold">Détails du Combat</h3>
-          <UBadge :color="getStatusColor(selectedCombat?.statut)" :label="selectedCombat?.statut" />
-        </div>
-
-        <div v-if="selectedCombat" class="space-y-6">
-          <!-- Informations générales -->
-          <div class="bg-slate-50 rounded-lg p-4">
-            <h4 class="font-semibold mb-3">Informations générales</h4>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span class="text-slate-600">ID Combat:</span>
-                <span class="ml-2 font-mono">{{ selectedCombat.id }}</span>
-              </div>
-              <div>
-                <span class="text-slate-600">Type:</span>
-                <span class="ml-2">{{ selectedCombat.typeCombat }}</span>
-              </div>
-              <div>
-                <span class="text-slate-600">Groupe:</span>
-                <span class="ml-2">{{ selectedCombat.groupe }}</span>
-              </div>
-              <div>
-                <span class="text-slate-600">Arbitre:</span>
-                <span class="ml-2">@{{ selectedCombat.arbitre }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Combattants -->
-          <div class="bg-slate-50 rounded-lg p-4">
-            <h4 class="font-semibold mb-3">Combattants</h4>
-            <div class="flex items-center justify-between">
-              <div class="text-center">
-                <UAvatar :alt="selectedCombat.roliste1" size="lg" class="mb-2" />
-                <div class="font-semibold">{{ selectedCombat.roliste1 }}</div>
-                <div class="text-sm text-slate-600">{{ selectedCombat.personnage1 || 'Personnage 1' }}</div>
-              </div>
-              <div class="text-2xl font-bold text-red-500">VS</div>
-              <div class="text-center">
-                <UAvatar :alt="selectedCombat.roliste2" size="lg" class="mb-2" />
-                <div class="font-semibold">{{ selectedCombat.roliste2 }}</div>
-                <div class="text-sm text-slate-600">{{ selectedCombat.personnage2 || 'Personnage 2' }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mise -->
-          <div class="bg-emerald-50 rounded-lg p-4 text-center">
-            <h4 class="font-semibold mb-2">Mise en jeu</h4>
-            <div class="text-3xl font-bold text-emerald-600">{{ selectedCombat.valeur }} USD</div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 pt-4">
-            <UButton
-              v-if="selectedCombat.statut === 'En attente'"
-              label="Participer au combat"
-              color="emerald"
-              class="flex-1"
-              @click="participerCombat(selectedCombat.id)"
-            />
-            <UButton
-              v-if="selectedCombat.statut === 'En cours' && isArbitre(selectedCombat)"
-              label="Déclarer le vainqueur"
-              color="primary"
-              class="flex-1"
-              @click="declarerVainqueur(selectedCombat.id)"
-            />
-            <UButton
-              label="Voir l'arène"
-              color="gray"
-              variant="outline"
-              @click="voirArene(selectedCombat.id)"
-            />
-          </div>
-        </div>
-      </div>
-    </UModal>
+    </UContainer>    
 
     <!-- Bouton flottant pour créer un combat -->
     <div class="fixed bottom-8 right-8 z-50">
-      <UButton
-        icon="i-lucide-plus"
-        size="xl"
-        color="emerald"
-        class="rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-110"
-        @click="openCreateCombatModal"
-      />
+        <UModal title="Défi de combat" v-model="isOpen" :ui="{ width: 'sm:max-w-3xl' }">
+            <UButton
+              icon="i-lucide-plus"
+              size="xl"
+              color="emerald"
+              class="rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-110"
+              @click="openCreateCombatModal"
+            />
+            <template #body>
+                <!-- Composant de création de combat -->
+                <CreateCombat 
+                  v-model="showCreateModal" 
+                  @combat-created="handleCombatCreated"
+                  @close="(etat) => test(etat)"
+                />
+            </template>
+        </UModal>
     </div>
 
-    <!-- Composant de création de combat -->
-    <CreateCombat 
-      v-model="showCreateModal" 
-      @combat-created="handleCombatCreated"
-    />
   </div>
 </template>
 
@@ -268,6 +277,18 @@
 definePageMeta({
   layout: 'users'
 })
+
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+function test(data) {
+  console.log(data)
+  isOpen.value = data
+}
 
 // États réactifs
 const activeFilter = ref('tous')
